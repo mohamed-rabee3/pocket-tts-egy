@@ -1,0 +1,86 @@
+# Egyptian Arabic Pocket TTS teacher (24 layers), fine-tuned from the English
+# 2026-09 teacher with a fresh text embedding (finetune_language recipe), on
+# diacritized Jais-ASR transcripts, read plain, partially or fully marked
+# (pocket_tts/egyptian_text.py, egyptian/scripts/prepare_v2.sh).
+model_config: pocket_tts/config/english_2026-09_24l.yaml
+model_overrides:
+  flow_lm.lookup_table.tokenizer_path: /data/egy/v2/tokenizer.json
+  flow_lm.lookup_table.n_bins: 8000
+start_from_pretrained: true
+reset_text_embedding: true
+
+data:
+  train_jsonl: /data/egy/v2/train_aligned.jsonl
+  valid_jsonl: /data/egy/v2/valid_aligned.jsonl
+  # Segments are stitched to <= 30 s (egyptian/scripts/build_manifest.py), so the
+  # continuous mode's max_state_sec 25 stays inside the trained lengths.
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0        # cap on the "preceding audio" part of the prompt
+  # Voice prompt modes (Saudi recipe): 35% reference clip only (start of an agent
+  # turn), 45% reference + preceding audio (later chunks), 20% preceding only.
+  # The reference is another segment of the same diarized speaker; segments with
+  # low diarization confidence carry no speaker and fall back to "preceding only".
+  ref_only_prob: 0.35
+  ref_ctx_prob: 0.45
+  min_ref_prompt_sec: 1.5
+  max_ref_prompt_sec: 5.0
+  prompt_trim_max_sec: 0.5
+  prompt_trim_prob: 0.3
+  final_punct_dropout: 0.3
+  # Diacritized transcripts (transcripts.jais.diacritized.jsonl), shown plain 40%, fully
+  # marked 20%, partially marked 25%, and marked on ambiguous words only 15% (the hints an
+  # agent's LLM would add), so the model reads all of these (pocket_tts/egyptian_text.py).
+  tashkeel_mode_probs: [0.4, 0.2, 0.25, 0.15]
+  tashkeel_lexicon: /data/egy/v2/ambiguous_words.json
+  # Interleaved text for the continuous (voice agent) mode: 0/1/2/3 extra text
+  # pieces inserted mid-target at word boundaries, each followed by an EOS probe.
+  interleave_probs: [0.3, 0.3, 0.25, 0.15]
+  interleave_min_piece_sec: 1.0
+  interleave_punct_weight: 4.0
+  loader_procs: 8
+  num_bucket_batches: 5
+  precompute: true
+
+flow:
+  type: lsd
+  kwargs: {}
+
+flow_batch_multiplier: 4
+eos_loss_weight: 0.1
+text_dropout: 0.2
+voice_dropout: 0.2
+
+optim:
+  lr: 2e-4             # text embedding starts random, the backbone has to move with it
+  # The Saudi teacher overfit after ~150k steps at a constant 2e-4. Cosine to 10%
+  # over 300k (never decay before ~200k: it stalls the acoustic-quality transition).
+  schedule: cosine
+  lr_min_ratio: 0.1
+  warmup_steps: 1000
+
+run_dir: /data/egy/runs/teacher_v2
+batch_size: 64         # one 96 GB GPU holds the reference batch in one pass
+grad_accum_steps: 1
+max_steps: 300000
+stats_ema_steps: 1000
+ema_decay: 0.999
+log_freq: 50
+valid_freq: 2500
+num_valid_batches: 20
+ckpt_freq: 5000
+num_ckpt_keep: 999     # keep every checkpoint to pick from by WER / homograph accuracy
+# Gemini synthetic female voice gemini-ar-eg-assistant-12,
+# 4.8 s: "زمان كنا بنكتب كل حاجة بإيدينا، دلوقتي كله بقى سهل."
+sample_voice: /data/egy/voices/sample_voice_female.flac
+sample_freq: 10000
+sample_cfg_coef: 2.0
+sample_sentences:
+  # One homograph plain, with a hint on the ambiguous word, and fully marked; the other
+  # reading plain; numbers and code switching; the [laughs] and [sighs] tags.
+  - "الكهربائي جاي بكرة عشان يركب اللمبة الجديدة في الصالة"
+  - "الكهربائي جاي بكرة عشان يرَكِّب اللمبة الجديدة في الصالة"
+  - "الكَهْرَبائِي جَاي بُكْرَة عَشان يِرَكِّب اللَّمْبَة الجِدِيدَة فِي الصَّالَة"
+  - "أنا هركب العربية وأروح الشغل بدري النهارده"
+  - "تمام يا فندم، الطلب بتاعك هيوصل خلال 3 أيام، وتقدر تتابعه من الأبلكيشن."
+  - "أنا كنت فاكرة إن الموضوع سهل [laughs] طلع أصعب حاجة عملتها في حياتي."
+  - "اليوم كان طويل أوي [sighs] بس الحمد لله خلصنا كل حاجة."

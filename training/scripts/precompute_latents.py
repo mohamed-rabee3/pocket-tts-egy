@@ -29,8 +29,11 @@ CALIBRATION_MARGIN_FRAMES = 4
 
 
 def default_decode_workers() -> int:
-    """Size the decode pool from the cores this process may actually use."""
-    return max(4, len(os.sched_getaffinity(0)) - 2)
+    """Size the decode pool from the cores this process may actually use, capped: each
+    worker is a spawned process with its own torch import and thread pool, and on a
+    320-core host one per core exhausts the container's task limit (fork fails) long
+    before decoding is the bottleneck."""
+    return max(4, min(32, len(os.sched_getaffinity(0)) - 2))
 
 
 # (path, start_sec, duration_sec, sample_rate): the arguments of _load_window.

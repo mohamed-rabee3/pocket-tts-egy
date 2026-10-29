@@ -36,6 +36,12 @@ class DataArgs:
     # tashkeel_dropout_all, else each word's marks with probability tashkeel_dropout_word.
     tashkeel_dropout_all: float = 0.0
     tashkeel_dropout_word: float = 0.0
+    # Egyptian tashkeel augmentation (pocket_tts.egyptian_text.tashkeel_augment), used
+    # instead of the dropout above when set: probabilities of showing a diacritized
+    # transcript plain / full / partially marked / marked on its ambiguous words only,
+    # and the ambiguous-word lexicon of the last form (a JSON list of letter skeletons).
+    tashkeel_mode_probs: list[float] = field(default_factory=list)
+    tashkeel_lexicon: str | None = None
     # Voice prompt modes (need a "speaker" field in the manifest): with probability
     # ref_only_prob the prompt is the start of another utterance of the same speaker and
     # the target is this whole utterance; with ref_ctx_prob it is that reference followed
@@ -195,6 +201,9 @@ class TrainArgs:
             "How much wood would a woodchuck chuck if a woodchuck could chuck wood?",
         ]
     )
+    # Audio file used as the voice prompt of the samples, so every step is heard
+    # in the same voice. None: the first training batch's voice prompt.
+    sample_voice: str | None = None
     sample_freq: int = 10000
     sample_temp: float = 0.3
     sample_cfg_coef: float = 1.0

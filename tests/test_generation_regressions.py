@@ -43,6 +43,7 @@ def test_generate_audio_stream_uses_prepared_chunk_text(monkeypatch: pytest.Monk
         SimpleNamespace(
             flow_lm=SimpleNamespace(conditioner=SimpleNamespace(tokenizer=object())),
             model_recommended_frames_after_eos=None,
+            normalize_text=lambda text: text,
             pad_with_spaces_for_short_inputs=True,
             remove_semicolons=False,
             append_terminal_punctuation=True,

@@ -81,7 +81,6 @@ VOICE_CLONING_UNSUPPORTED = (
 
 
 class TTSModel(nn.Module):
-    _TOKENS_PER_SECOND_ESTIMATE = 3.0
     _GEN_SECONDS_PADDING = 2.0
     # EOS is ignored on the first frames: before speech starts, the EOS logit of some voices can
     # cross the threshold, and a short text then ends before the word is spoken.
@@ -124,6 +123,27 @@ class TTSModel(nn.Module):
     @property
     def device(self) -> torch.device:
         return next(self.parameters()).device
+
+    def normalize_text(self, text: str) -> str:
+        """The config's text_normalizer, the normalization of the training text (text
+        unchanged without one)."""
+        if self.config.text_normalizer == "egyptian":
+            from pocket_tts.egyptian_text import (
+                canonicalize_marks,
+                load_mark_lexicon,
+                normalize_egyptian,
+            )
+
+            text = normalize_egyptian(text)
+            if self.config.mark_lexicon:
+                lexicon = str(download_if_necessary(self.config.mark_lexicon))
+                text = canonicalize_marks(text, load_mark_lexicon(lexicon))
+            return text
+        if self.config.text_normalizer == "saudi":
+            from pocket_tts.arabic_text import normalize_tashkeel
+
+            return normalize_tashkeel(text)
+        return text
 
     @property
     def sample_rate(self) -> int:
@@ -713,6 +733,7 @@ class TTSModel(nn.Module):
             frames_after_eos = self.model_recommended_frames_after_eos
         if stop is None:
             stop = threading.Event()
+        text_to_generate = self.normalize_text(text_to_generate)
 
         # This is a very simplistic way of handling long texts. We could do much better
         # by using teacher forcing, but it would be a bit slower.
@@ -1054,6 +1075,6 @@ class TTSModel(nn.Module):
         return model_state
 
     def _estimate_max_gen_len(self, token_count: int) -> int:
-        gen_len_sec = token_count / self._TOKENS_PER_SECOND_ESTIMATE + self._GEN_SECONDS_PADDING
+        gen_len_sec = token_count / self.config.min_tokens_per_second + self._GEN_SECONDS_PADDING
         frame_rate = self.config.mimi.frame_rate
         return math.ceil(gen_len_sec * frame_rate)

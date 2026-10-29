@@ -1,0 +1,80 @@
+# 6-layer CPU student distilled from the Egyptian 24-layer teacher
+# (training/configs/depth_distill.yaml recipe, as saudi/configs/saudi_distill_6l.yaml).
+# CFG baked at 3.0: the student learns the teacher's guided output, sampled at cfg 1
+# with no null branch. distill_6l_v2 baked 1.0 (the teacher unguided): its female voice
+# drifted up in pitch and thinned (189 Hz against the prompt's ~170); the teacher at
+# cfg 3 holds the voice (167 Hz) and scored 4.83 against 4.32 at cfg 2 in the held-out
+# listening test (87 clips, both voices, digits 4.41 against 2.88).
+model_config: pocket_tts/config/english_2026-09.yaml   # 6-layer student
+model_overrides:
+  flow_lm.lookup_table.tokenizer_path: /data/egy/v2/tokenizer.json
+  flow_lm.lookup_table.n_bins: 8000
+start_from_pretrained: false
+distill_cfg_coef: 3.0
+distill_teacher_config: pocket_tts/config/english_2026-09_24l.yaml
+distill_teacher_overrides:
+  flow_lm.lookup_table.tokenizer_path: /data/egy/v2/tokenizer.json
+  flow_lm.lookup_table.n_bins: 8000
+distill_teacher_weights: /data/egy/runs/teacher_v2/kept/checkpoint_00300000.pt   # picked: listening test 300k 4.31 vs 290k 4.16
+
+data:
+  train_jsonl: /data/egy/v2/train_aligned.jsonl
+  valid_jsonl: /data/egy/v2/valid_aligned.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  ref_only_prob: 0.35
+  ref_ctx_prob: 0.45
+  min_ref_prompt_sec: 1.5
+  max_ref_prompt_sec: 5.0
+  prompt_trim_max_sec: 0.5
+  prompt_trim_prob: 0.3
+  final_punct_dropout: 0.3
+  # Diacritized transcripts (transcripts.jais.diacritized.jsonl), shown plain 40%, fully
+  # marked 20%, partially marked 25%, and marked on ambiguous words only 15% (the hints an
+  # agent's LLM would add), so the model reads all of these (pocket_tts/egyptian_text.py).
+  tashkeel_mode_probs: [0.4, 0.2, 0.25, 0.15]
+  tashkeel_lexicon: /data/egy/v2/ambiguous_words.json
+  interleave_probs: [0.3, 0.3, 0.25, 0.15]
+  interleave_min_piece_sec: 1.0
+  interleave_punct_weight: 4.0
+  loader_procs: 8
+  num_bucket_batches: 5
+  precompute: true
+
+flow:
+  type: lsd
+  kwargs: {}
+
+text_dropout: 0.0
+voice_dropout: 0.0
+
+optim:
+  lr: 4e-4             # recipe: screened {1,2,4}e-4, 4e-4 clearly best
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: /data/egy/runs/distill_6l_v2_cfg3
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 200000      # recipe: WER at parity by ~50k; sim and UTMOS climb until ~150k
+ema_decay: 0.9999
+log_freq: 50
+valid_freq: 2500
+num_valid_batches: 20
+ckpt_freq: 5000
+num_ckpt_keep: 999
+# Gemini synthetic female voice gemini-ar-eg-assistant-12,
+# 4.8 s: "زمان كنا بنكتب كل حاجة بإيدينا، دلوقتي كله بقى سهل."
+sample_voice: /data/egy/voices/sample_voice_female.flac
+sample_freq: 10000
+sample_cfg_coef: 1.0
+sample_sentences:
+  # One homograph plain, with a hint on the ambiguous word, and fully marked; the other
+  # reading plain; numbers and code switching; the [laughs] and [sighs] tags.
+  - "الكهربائي جاي بكرة عشان يركب اللمبة الجديدة في الصالة"
+  - "الكهربائي جاي بكرة عشان يرَكِّب اللمبة الجديدة في الصالة"
+  - "الكَهْرَبائِي جَاي بُكْرَة عَشان يِرَكِّب اللَّمْبَة الجِدِيدَة فِي الصَّالَة"
+  - "أنا هركب العربية وأروح الشغل بدري النهارده"
+  - "تمام يا فندم، الطلب بتاعك هيوصل خلال 3 أيام، وتقدر تتابعه من الأبلكيشن."
+  - "أنا كنت فاكرة إن الموضوع سهل [laughs] طلع أصعب حاجة عملتها في حياتي."
+  - "اليوم كان طويل أوي [sighs] بس الحمد لله خلصنا كل حاجة."

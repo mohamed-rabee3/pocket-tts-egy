@@ -63,6 +63,16 @@ def main(
         float, typer.Option(help="raise to 1.0 for a small alphabet to keep every character")
     ] = 0.9995,
     model_type: Annotated[Literal["unigram", "bpe", "char"], typer.Option()] = "unigram",
+    required_chars: Annotated[
+        str,
+        typer.Option(
+            help="characters that get a piece whatever their frequency (character_coverage "
+            "otherwise drops rare ones to byte fallback: digits, diacritics, punctuation)"
+        ),
+    ] = "",
+    user_defined_symbols: Annotated[
+        str, typer.Option(help="comma-separated strings that are always one token, e.g. tags")
+    ] = "",
 ):
     Path(output_prefix).parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as tmp:
@@ -78,6 +88,8 @@ def main(
         vocab_size=vocab_size,
         character_coverage=character_coverage,
         model_type=model_type,
+        required_chars=required_chars,
+        user_defined_symbols=[s for s in user_defined_symbols.split(",") if s],
         # The rest reproduces the spec the released tokenizers were trained with.
         normalization_rule_name="identity",
         remove_extra_whitespaces=False,

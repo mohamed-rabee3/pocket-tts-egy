@@ -12,6 +12,7 @@ from typing import Any
 import soundfile
 import torch
 
+from pocket_tts.data.audio_utils import convert_audio
 from pocket_tts.models.flow_lm import FlowLMModel
 from pocket_tts.models.mimi import MimiModel
 from pocket_tts.modules.attention import StreamingMultiheadAttention
@@ -125,6 +126,14 @@ def lr_at(step: int, args: TrainArgs) -> float:
 
 
 @torch.no_grad()
+@torch.no_grad()
+def load_sample_voice(path: str, mimi: MimiModel, device: torch.device) -> torch.Tensor:
+    """Voice prompt latents [T, C] of a whole audio file."""
+    wav, sr = soundfile.read(path, dtype="float32", always_2d=True)
+    audio = convert_audio(torch.from_numpy(wav.T), int(sr), int(mimi.sample_rate), 1)
+    return mimi.encode_to_latent(audio[None].to(device))[0].float()
+
+
 def write_samples(
     model: TrainableTTS,
     mimi: MimiModel,

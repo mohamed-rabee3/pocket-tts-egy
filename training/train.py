@@ -49,6 +49,7 @@ from training.train_utils import (
     check_manifest_sizes,
     ensure_train_latents,
     git_commit,
+    load_sample_voice,
     lr_at,
     setup_logging,
     write_samples,
@@ -200,6 +201,8 @@ def main(config_path: str):
         prompt_trim_prob=args.data.prompt_trim_prob,
         tashkeel_dropout_all=args.data.tashkeel_dropout_all,
         tashkeel_dropout_word=args.data.tashkeel_dropout_word,
+        tashkeel_mode_probs=args.data.tashkeel_mode_probs,
+        tashkeel_lexicon=args.data.tashkeel_lexicon,
         ref_only_prob=args.data.ref_only_prob,
         ref_ctx_prob=args.data.ref_ctx_prob,
         min_ref_prompt_sec=args.data.min_ref_prompt_sec,
@@ -230,6 +233,8 @@ def main(config_path: str):
     last_log = time.time()
     steps_since_log = 0
     sample_voice = None
+    if rank == 0 and args.sample_voice:
+        sample_voice = load_sample_voice(args.sample_voice, mimi, device)
     for step in range(start_step, args.max_steps):
         step_start = time.time()
         lr = lr_at(step, args)

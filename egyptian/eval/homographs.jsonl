@@ -1,0 +1,35 @@
+{"id": "rkb_ride_1", "text": "أنا هركب العربية وأروح الشغل بدري النهارده", "target": "هركب", "checks": [["ك", "no_shadda"]], "sense": "ride", "reading": "هَرْكَب", "other_reading": "هَرَكِّب"}
+{"id": "rkb_ride_2", "text": "ابني بيحب يركب العجلة في الجنينة", "target": "يركب", "checks": [["ك", "no_shadda"]], "sense": "ride", "reading": "يِرْكَب", "other_reading": "يْرَكِّب"}
+{"id": "rkb_inst_1", "text": "الكهربائي جاي بكرة عشان يركب اللمبة الجديدة في الصالة", "target": "يركب", "checks": [["ك", "shadda"]], "sense": "install", "reading": "يْرَكِّب", "other_reading": "يِرْكَب"}
+{"id": "rkb_inst_2", "text": "لازم نركب تكييف في أوضة النوم قبل الصيف", "target": "نركب", "checks": [["ك", "shadda"]], "sense": "install", "reading": "نْرَكِّب", "other_reading": "نِرْكَب"}
+{"id": "3lm_flag", "text": "رفعنا العلم في طابور المدرسة الصبح", "target": "العلم", "checks": [["ع", "fatha"], ["ل", "no_shadda"]], "sense": "flag", "reading": "الْعَلَم", "other_reading": "الْعِلْم"}
+{"id": "3lm_science", "text": "العلم نور والجهل ضلمة", "target": "العلم", "checks": [["ع", "kasra"]], "sense": "science", "reading": "الْعِلْم", "other_reading": "الْعَلَم"}
+{"id": "3lm_taught", "text": "أبويا علمني السواقة وأنا عندي ستاشر سنة", "target": "علمني", "checks": [["ل", "shadda"]], "sense": "taught", "reading": "عَلِّمْنِي", "other_reading": "عَلَمْنِي"}
+{"id": "mdrsa_school", "text": "الولاد راحوا المدرسة بدري النهارده", "target": "المدرسة", "checks": [["ر", "no_shadda"]], "sense": "school", "reading": "الْمَدْرَسَة", "other_reading": "الْمُدَرِّسَة"}
+{"id": "mdrsa_teacher", "text": "المدرسة شرحت الدرس للفصل كله وبعدين ادتهم واجب", "target": "المدرسة", "checks": [["ر", "shadda"]], "sense": "teacher (f)", "reading": "الْمُدَرِّسَة", "other_reading": "الْمَدْرَسَة"}
+{"id": "hb_love", "text": "الحب الحقيقي بيبان وقت الشدة", "target": "الحب", "checks": [["ح", "damma"]], "sense": "love", "reading": "الْحُبّ", "other_reading": "الْحَبّ"}
+{"id": "hb_seeds", "text": "اشتريت حب بطيخ ولب سوري من المحمصة", "target": "حب", "checks": [["ح", "fatha"]], "sense": "seeds", "reading": "حَبّ", "other_reading": "حُبّ"}
+{"id": "mlk_king", "text": "الملك فاروق كان آخر ملك لمصر", "target": "الملك", "checks": [["م", "fatha"]], "sense": "king", "reading": "الْمَلِك", "other_reading": "الْمِلْك"}
+{"id": "mlk_property", "text": "الشقة دي ملك أبويا مش إيجار", "target": "ملك", "checks": [["م", "kasra"]], "sense": "property", "reading": "مِلْك", "other_reading": "مَلِك"}
+{"id": "ktb_books", "text": "الكتب كلها على الرف اللي فوق", "target": "الكتب", "checks": [["ك", "damma"]], "sense": "books", "reading": "الْكُتُب", "other_reading": "الْكَتَب"}
+{"id": "ktb_wrote", "text": "هو كتب الجواب بإيده امبارح بالليل", "target": "كتب", "checks": [["ك", "fatha"]], "sense": "wrote", "reading": "كَتَب", "other_reading": "كُتُب"}
+{"id": "sh3r_hair", "text": "شعرها طويل وناعم ولونه بني", "target": "شعرها", "checks": [["ش", "fatha"]], "sense": "hair", "reading": "شَعْرَهَا", "other_reading": "شِعْرَهَا"}
+{"id": "sh3r_poetry", "text": "بيحب يقرا شعر نزار قباني قبل ما ينام", "target": "شعر", "checks": [["ش", "kasra"]], "sense": "poetry", "reading": "شِعْر", "other_reading": "شَعْر"}
+{"id": "skr_sugar", "text": "حط معلقتين سكر في الشاي لو سمحت", "target": "سكر", "checks": [["س", "damma"]], "sense": "sugar", "reading": "سُكَّر", "other_reading": "سَكَّر"}
+{"id": "skr_close", "text": "سكر الباب وراك عشان البرد", "target": "سكر", "checks": [["س", "fatha"]], "sense": "close", "reading": "سَكَّر", "other_reading": "سُكَّر"}
+{"id": "fr7_wedding", "text": "الفرح كان في قاعة كبيرة في التجمع", "target": "الفرح", "checks": [["ف", "fatha"]], "sense": "wedding", "reading": "الْفَرَح", "other_reading": "الْفِرِح"}
+{"id": "fr7_happy", "text": "فرح جدا لما عرف إنه نجح في الامتحان", "target": "فرح", "checks": [["ف", "kasra"]], "sense": "rejoiced", "reading": "فِرِح", "other_reading": "فَرَح"}
+{"id": "gd_grandpa", "text": "جدي عنده تمانين سنة وصحته كويسة", "target": "جدي", "checks": [["ج", "kasra"]], "sense": "grandfather", "reading": "جِدِّي", "other_reading": "جَدِّي"}
+{"id": "gd_serious", "text": "أنا بتكلم جد مش بهزر معاك", "target": "جد", "checks": [["ج", "fatha"]], "sense": "serious", "reading": "جَدّ", "other_reading": "جِدّ"}
+{"id": "7ml_load", "text": "الحمل ده تقيل أوي على ضهري", "target": "الحمل", "checks": [["ح", "kasra"]], "sense": "load", "reading": "الْحِمْل", "other_reading": "الْحَمْل"}
+{"id": "7ml_pregnancy", "text": "مراتي في الشهر الخامس من الحمل", "target": "الحمل", "checks": [["ح", "fatha"]], "sense": "pregnancy", "reading": "الْحَمْل", "other_reading": "الْحِمْل"}
+{"id": "drs_studies", "text": "أخويا بيدرس طب في جامعة القاهرة", "target": "بيدرس", "checks": [["ر", "no_shadda"]], "sense": "studies", "reading": "بِيِدْرِس", "other_reading": "بِيْدَرِّس"}
+{"id": "drs_teaches", "text": "هو بيدرس رياضة لطلبة تانية ثانوي في مدرسة خاصة", "target": "بيدرس", "checks": [["ر", "shadda"]], "sense": "teaches", "reading": "بِيْدَرِّس", "other_reading": "بِيِدْرِس"}
+{"id": "3lm_teaches", "text": "المدرب بيعلم الولاد السباحة كل جمعة", "target": "بيعلم", "checks": [["ل", "shadda"]], "sense": "teaches", "reading": "بِيْعَلِّم", "other_reading": "بِيِعْلَم"}
+{"id": "3lm_knows", "text": "ربنا يعلم أنا تعبت قد إيه في الشغلانة دي", "target": "يعلم", "checks": [["ل", "no_shadda"]], "sense": "knows", "reading": "يَعْلَم", "other_reading": "يْعَلِّم"}
+{"id": "qdm_apply", "text": "قدم على الوظيفة دي قبل آخر الشهر", "target": "قدم", "checks": [["د", "shadda"]], "sense": "apply", "reading": "قَدِّم", "other_reading": "قَدَم"}
+{"id": "qdm_foot", "text": "بيحب كرة القدم من وهو صغير", "target": "القدم", "checks": [["د", "no_shadda"]], "sense": "foot(ball)", "reading": "الْقَدَم", "other_reading": "الْقَدِّم"}
+{"id": "ksr_broke", "text": "الواد كسر الكوباية وهو بيلعب في المطبخ", "target": "كسر", "checks": [["س", "fatha"]], "sense": "broke", "reading": "كَسَر", "other_reading": "كَسْر"}
+{"id": "ksr_fracture", "text": "الدكتور قال إن عنده كسر في رجله الشمال", "target": "كسر", "checks": [["س", "sukun"]], "sense": "fracture", "reading": "كَسْر", "other_reading": "كَسَر"}
+{"id": "3rf_knew", "text": "عرف الحقيقة متأخر أوي", "target": "عرف", "checks": [["ر", "no_shadda"]], "sense": "knew", "reading": "عِرِف", "other_reading": "عَرَّف"}
+{"id": "3rf_introduced", "text": "عرفني على صاحبه في الفرح امبارح", "target": "عرفني", "checks": [["ر", "shadda"]], "sense": "introduced", "reading": "عَرَّفْنِي", "other_reading": "عِرِفْنِي"}

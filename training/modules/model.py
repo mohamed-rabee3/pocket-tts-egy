@@ -165,7 +165,11 @@ class TrainableTTS(nn.Module):
                 )
                 if coef != 1.0:  # at 1.0 the null pass cancels out
                     z_null, zp_null, _ = self.backbone_z_probes(
-                        teacher, *inputs, cfg_dropout=False, force_null=True, text_pieces=text_pieces
+                        teacher,
+                        *inputs,
+                        cfg_dropout=False,
+                        force_null=True,
+                        text_pieces=text_pieces,
                     )
                     z_t = z_null + coef * (z_t - z_null)
                     zp_t = zp_null + coef * (zp_t - zp_null) if zp_t is not None else None

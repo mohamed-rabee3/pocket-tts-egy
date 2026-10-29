@@ -164,3 +164,35 @@ def test_unaligned_last_word_keeps_the_end_of_the_file():
     quote = {"word": "»", "end": None}  # unaligned punctuation is not spoken
     words = [{"word": "oui", "start": 0.1, "end": 0.3}, quote]
     assert DataLoader._last_word_end(Entry("a.wav", 2.0, "oui »", words)) == 0.3
+
+
+def test_entry_weights_set_draws_per_epoch() -> None:
+    import json
+    import random
+
+    from training.dataloader.loader import DataLoader
+
+    rows = [{"path": "a.wav", "duration": 1.0, "transcript": "x", "weight": 2.5}]
+    rows += [{"path": f"b{i}.wav", "duration": 1.0, "transcript": "x"} for i in range(3)]
+    loader = DataLoader.__new__(DataLoader)
+    loader.entries = [json.dumps(r) for r in rows]
+    loader.rng = random.Random(0)
+    loader.weights = loader._entry_weights()
+    counts = [loader._epoch_order().count(0) for _ in range(2000)]
+    assert set(counts) == {2, 3}
+    assert abs(sum(counts) / len(counts) - 2.5) < 0.05
+    assert loader._epoch_order().count(1) == 1
+
+
+def test_no_weights_keeps_every_entry_once() -> None:
+    import json
+    import random
+
+    from training.dataloader.loader import DataLoader
+
+    loader = DataLoader.__new__(DataLoader)
+    loader.entries = [json.dumps({"path": f"{i}.wav"}) for i in range(5)]
+    loader.rng = random.Random(0)
+    loader.weights = loader._entry_weights()
+    assert loader.weights is None
+    assert loader._epoch_order() == [0, 1, 2, 3, 4]

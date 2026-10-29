@@ -24,6 +24,7 @@ import torch
 from safetensors import safe_open
 
 from pocket_tts.arabic_text import tashkeel_dropout
+from pocket_tts.egyptian_text import tashkeel_augment
 
 from . import audio
 from .manifest import LazyEntries, load_entries
@@ -65,11 +66,14 @@ class DataLoader:
     final_punct_dropout: float = 0.0
     tashkeel_dropout_all: float = 0.0
     tashkeel_dropout_word: float = 0.0
+    tashkeel_mode_probs: ClassVar[list[float]] = []
+    ambiguous: ClassVar[frozenset[str]] = frozenset()
     ref_only_prob: float = 0.0
     ref_ctx_prob: float = 0.0
     min_ref_prompt_sec: float = 1.5
     max_ref_prompt_sec: float = 5.0
     by_speaker: ClassVar[dict[str, list[int]]] = {}
+    weights: "npt.NDArray[np.float64] | None" = None  # per-entry sampling weights
     interleave_probs: ClassVar[list[float]] = [1.0]
     interleave_min_piece_sec: float = 1.0
     interleave_punct_weight: float = 4.0
@@ -94,6 +98,8 @@ class DataLoader:
         prompt_trim_prob: float = 1.0,
         tashkeel_dropout_all: float = 0.0,
         tashkeel_dropout_word: float = 0.0,
+        tashkeel_mode_probs: list[float] | None = None,
+        tashkeel_lexicon: str | None = None,
         ref_only_prob: float = 0.0,
         ref_ctx_prob: float = 0.0,
         min_ref_prompt_sec: float = 1.5,
@@ -109,6 +115,9 @@ class DataLoader:
         self.prompt_trim_prob = prompt_trim_prob
         self.tashkeel_dropout_all = tashkeel_dropout_all
         self.tashkeel_dropout_word = tashkeel_dropout_word
+        self.tashkeel_mode_probs = list(tashkeel_mode_probs or [])
+        if tashkeel_lexicon:
+            self.ambiguous = frozenset(json.loads(Path(tashkeel_lexicon).read_text()))
         self.ref_only_prob = ref_only_prob
         self.ref_ctx_prob = ref_ctx_prob
         self.min_ref_prompt_sec = min_ref_prompt_sec
@@ -137,6 +146,36 @@ class DataLoader:
             logger.info(f"latent mode: stitch_frames={self.stitch_frames} from {meta_path.name}")
         if self.ref_only_prob + self.ref_ctx_prob > 0:
             self.by_speaker = self._index_speakers()
+        self.weights = self._entry_weights()
+
+    _WEIGHT = re.compile(rb'"weight":\s*([0-9.eE+-]+)')
+
+    def _entry_weights(self) -> npt.NDArray[np.float64] | None:
+        """Per-entry sampling weights from the optional manifest field "weight" (default
+        1): each epoch an entry appears floor(w) times plus once more with probability
+        frac(w), so over-represented speakers are subsampled afresh every epoch instead of
+        being cut from the manifest. None when no entry carries a weight."""
+        weights = np.ones(len(self.entries))
+        found = False
+        for i in range(len(self.entries)):
+            m = self._WEIGHT.search(self.entries[i].encode())
+            if m:
+                weights[i] = float(m.group(1))
+                found = True
+        if not found:
+            return None
+        logger.info(
+            f"entry weights: {weights.sum():.0f} draws per epoch from {len(weights)} entries"
+        )
+        return weights
+
+    def _epoch_order(self) -> list[int]:
+        if self.weights is None:
+            return list(range(len(self.entries)))
+        reps = np.floor(self.weights).astype(np.int64)
+        frac = self.weights - reps
+        reps += np.array([self.rng.random() < f for f in frac], dtype=np.int64)
+        return np.repeat(np.arange(len(self.entries)), reps).tolist()
 
     def _index_speakers(self) -> dict[str, list[int]]:
         """speaker -> entry indices of this shard, for reference voice prompts."""
@@ -169,7 +208,9 @@ class DataLoader:
         period goes: "?" and "!" change how the sentence is said."""
         if self.final_punct_dropout > 0 and self.rng.random() < self.final_punct_dropout:
             text = re.sub(r"\.\s*$", "", text) or text
-        if self.tashkeel_dropout_all > 0 or self.tashkeel_dropout_word > 0:
+        if self.tashkeel_mode_probs:
+            text = tashkeel_augment(text, self.rng, self.tashkeel_mode_probs, self.ambiguous)
+        elif self.tashkeel_dropout_all > 0 or self.tashkeel_dropout_word > 0:
             text = tashkeel_dropout(
                 text, self.rng, self.tashkeel_dropout_all, self.tashkeel_dropout_word
             )
@@ -526,7 +567,7 @@ class DataLoader:
             )
         while True:
             yielded = 0
-            order = list(range(len(self.entries)))
+            order = self._epoch_order()
             if self.shuffle:
                 self.rng.shuffle(order)
             samples = []

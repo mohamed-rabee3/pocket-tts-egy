@@ -1,6 +1,7 @@
 """Configuration models for loading YAML config files."""
 
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict
@@ -150,6 +151,18 @@ class Config(StrictModel):
     # training text never contained (straight quotes, curly apostrophes in CML-TTS/MLS): their
     # embeddings are untrained and the model speaks filler syllables where they occur.
     replace_characters: dict[str, str] = {}
+    # The normalization the model's training text went through, applied to every input text
+    # before tokenization (TTSModel.normalize_text): "egyptian" is
+    # pocket_tts.egyptian_text.normalize_egyptian, "saudi" pocket_tts.arabic_text.normalize_tashkeel.
+    text_normalizer: Literal["egyptian", "saudi"] | None = None
+    # egyptian only: the training text's mark lexicon (build_manifest.py marks); the marks
+    # of an input word are rewritten as the training text writes that word
+    # (pocket_tts.egyptian_text.canonicalize_marks).
+    mark_lexicon: str | None = None
+    # Generation budget of a chunk: tokens / min_tokens_per_second + 2 s of audio. 3.0 suits
+    # English; a language that speaks fewer tokens per second needs a lower value, or slow
+    # speech is cut off before its EOS.
+    min_tokens_per_second: float = 3.0
     model_recommended_frames_after_eos: int | None = None
     # 0.3 beats 0.7 on WER and UTMOS for every shipped model (human evals agreed for English, #223);
     # a config sets its own value only if it was tuned elsewhere.

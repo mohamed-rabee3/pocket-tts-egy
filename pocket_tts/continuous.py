@@ -36,7 +36,7 @@ Usage:
 import logging
 import re
 import threading
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from pathlib import Path
 
@@ -69,7 +69,7 @@ class VoiceAgentTTS:
         sentence_pause_frames: int = 4,
         clause_pause_frames: int = 2,
         max_turn_sec: float = 600.0,
-        normalize_text: bool = True,
+        normalize_text: bool | Callable[[str], str] = True,
         ref_in_continuation: bool = True,
         interleaved: bool = False,
         max_state_sec: float = 25.0,
@@ -92,7 +92,17 @@ class VoiceAgentTTS:
         self.sentence_pause_frames = sentence_pause_frames
         self.clause_pause_frames = clause_pause_frames
         self.max_turn_sec = max_turn_sec
-        self.normalize_text = normalize_text
+        # True: the model config's text_normalizer (the training text's normalization),
+        # the Saudi tashkeel normalizer for configs without one; a callable replaces it;
+        # False: none.
+        if callable(normalize_text):
+            self.normalize_text: Callable[[str], str] | None = normalize_text
+        elif normalize_text:
+            self.normalize_text = (
+                model.normalize_text if model.config.text_normalizer else normalize_tashkeel
+            )
+        else:
+            self.normalize_text = None
         # True for models trained with ref_ctx prompts (the Saudi recipe). Models
         # trained only on contiguous prompts (released English) need False: later
         # chunks are then prompted with the turn's own audio alone.
@@ -164,8 +174,8 @@ class Turn:
         """Generate one chunk as the continuation of everything said so far in this turn."""
         model, voice = self.voice.model, self.voice
         fl = model.flow_lm
-        if voice.normalize_text:
-            text = normalize_tashkeel(text)
+        if voice.normalize_text is not None:
+            text = voice.normalize_text(text)
         if not text or self.stopped:
             return
         tokens = fl.conditioner.prepare(text)
