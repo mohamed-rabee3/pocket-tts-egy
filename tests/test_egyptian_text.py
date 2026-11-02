@@ -136,7 +136,7 @@ def test_canonicalize_leaves_unmarked_text_alone() -> None:
 
 def test_load_mark_lexicon(tmp_path: Path) -> None:
     path = tmp_path / "marks.json.gz"
-    with gzip.open(path, "wt") as fh:
+    with gzip.open(path, "wt", encoding="utf-8") as fh:
         json.dump({"forms": {"بعتذر": [["بَعْتَذِر", 294]]}, "known": ["بعتذر"], "ambiguous": []}, fh)
     lexicon = load_mark_lexicon(str(path))
     assert canonicalize_marks("بَعْتِذِر", lexicon) == "بَعْتَذِر"

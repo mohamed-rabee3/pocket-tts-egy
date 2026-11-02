@@ -172,7 +172,13 @@ class MarkLexicon:
 
 @functools.lru_cache(maxsize=4)
 def load_mark_lexicon(path: str) -> MarkLexicon:
-    with gzip.open(path, "rt") if path.endswith(".gz") else open(path) as fh:
+    # Text mode follows the locale encoding, cp1252 on Windows, which cannot read
+    # this Arabic file. The lexicon is UTF-8.
+    if path.endswith(".gz"):
+        fh_ctx = gzip.open(path, "rt", encoding="utf-8")
+    else:
+        fh_ctx = open(path, encoding="utf-8")
+    with fh_ctx as fh:
         d = json.load(fh)
     return MarkLexicon(
         {k: [(f, n) for f, n in v] for k, v in d["forms"].items()},

@@ -125,5 +125,11 @@ def download_if_necessary(file_path: str) -> Path:
             revision = None
         cached_file = hf_hub_download(repo_id=repo_id, filename=filename, revision=revision)
         return Path(cached_file)
-    else:
-        return Path(file_path)
+    path = Path(file_path)
+    # A relative path is the project root (models/...), so the same config works
+    # from any working directory. A path that is not in the repo stays as given.
+    if not path.is_absolute():
+        rooted = PROJECT_ROOT / path
+        if rooted.exists():
+            return rooted
+    return path

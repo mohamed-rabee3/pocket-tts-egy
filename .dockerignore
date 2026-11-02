@@ -1,7 +1,16 @@
 .git
 .venv
+.venv-train
 __pycache__
 *.pyc
 tests/test_custom_path.py
 temp_models/
 /.venv/
+# Training outputs and data, and model files the 6-layer server does not use (several GB).
+runs/
+data*/
+**/*.pt
+**/.cache
+models/tashkeel-v4-egyptian
+models/egyptian-pocket-tts/teacher-24l
+*.wav

@@ -1,6 +1,6 @@
-# Egyptian 24-layer teacher: english_2026-09_24l architecture + Egyptian tokenizer. Load with TTSModel.load_model(config=..., checkpoint=...).
-weights_path: hf://kyutai/pocket-tts/languages/english_2026-09_24l/model.safetensors@983151f13aaeab1b13c1e5e3c2c383d49a9edf3f
-weights_path_without_voice_cloning: hf://kyutai/pocket-tts-without-voice-cloning/languages/english_2026-09_24l/model.safetensors@e7205b6ee50e654a5ea19f0e9df2b0813b05e921
+# Egyptian 24-layer teacher. Paths are relative to the repository root
+# (models/egyptian-pocket-tts, from egyptian/scripts/download_models.py).
+weights_path: models/egyptian-pocket-tts/teacher-24l/model.safetensors
 
 default_temperature: 0.3
 # Every input goes through the training text's normalization (marks kept, final sukun
@@ -9,7 +9,7 @@ text_normalizer: egyptian
 # Marks written as the training text writes each word (build_manifest.py marks): another
 # transcriber's vowel or marks on a word the training text never marked reach the model as
 # token sequences it rarely saw (pocket_tts/egyptian_text.canonicalize_marks).
-mark_lexicon: /data/egy/v2/mark_lexicon.json.gz
+mark_lexicon: models/egyptian-pocket-tts/mark_lexicon.json.gz
 # Training text never capitalizes a leading Latin word.
 capitalize_first_letter: false
 # Egyptian speech carries fewer tokens per second than English: a lower rate gives slow
@@ -31,7 +31,7 @@ flow_lm:
     dim: 1024
     n_bins: 8000
     tokenizer: tokenizers
-    tokenizer_path: /data/egy/v2/tokenizer.json
+    tokenizer_path: models/egyptian-pocket-tts/tokenizer.json
 mimi:
   dtype: float32
   sample_rate: 24000

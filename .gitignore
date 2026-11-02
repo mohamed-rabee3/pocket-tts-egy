@@ -97,3 +97,6 @@ italk.yaml
 .venv-train/
 /data*/
 runs/
+
+# Downloaded Egyptian weights (egyptian/scripts/download_models.py). Not part of the repo.
+/models/

@@ -21,6 +21,7 @@ dependencies = [
     "einops>=0.4.0",
     "huggingface_hub>=0.13.0",
     "requests>=2.20.0",
+    "vastai>=1.9.1",
 ]
 
 [project.optional-dependencies]
